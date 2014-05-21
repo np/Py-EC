@@ -124,16 +124,18 @@ class Point:
         and returns the multiplication result
         """
         if isinstance( other, int ) or isinstance( other, long ):
+            o = ec_bignum.BigNum( decval=other )
             try:
-                o = ec_bignum.BigNum( decval=other )
-                result = OpenSSL.EC_POINT_new( self.os_group )
-                OpenSSL.EC_POINT_mul( self.os_group, result, 0, self.os_point, o.bn, 0 )
-                return Point( self.curve, openssl_point=result )
+                return self.__mul__(o)
             finally:
                 del o
+        elif isinstance( other, ec_bignum.BigNum ):
+            result = OpenSSL.EC_POINT_new( self.os_group )
+            OpenSSL.EC_POINT_mul( self.os_group, result, 0, self.os_point, other.bn, 0 )
+            return Point( self.curve, openssl_point=result )
         else:
             return NotImplemented
-            
+
     __rmul__ = __mul__
             
     def __str__(self):
