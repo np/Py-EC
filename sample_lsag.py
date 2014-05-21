@@ -57,14 +57,14 @@ def sign(curve, keys, signer_index, message="Hello message"):
     Y_tilde = signer.private_key * H
 
     # Step 2
-    u = randint( 0, curve.order )
+    u = randint( 0, curve.order - 1)
     pi_plus_1 = (signer_index+1) % key_count
     cs[pi_plus_1] = H1( curve, public_keys_hash, Y_tilde, message,
                         u * curve.G, u * H )
 
     # Step 3
     for i in range( signer_index+1, key_count ) + range( signer_index ):
-        ss[i] = randint( 0, curve.order )
+        ss[i] = randint( 0, curve.order - 1)
         next_i = (i+1) % key_count
         z_s[i] = ss[i] * curve.G + cs[i] * public_keys[i]
         z__s[i] = ss[i] * H + cs[i] * Y_tilde
