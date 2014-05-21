@@ -28,6 +28,14 @@ from echelper import ECHelper
 import curve as ec_curve
 import bignum as ec_bignum
 
+# TODO: move this to pyelliptic
+OpenSSL.EC_POINT_invert = OpenSSL._lib.EC_POINT_invert
+OpenSSL.EC_POINT_invert.restype = ctypes.c_int
+OpenSSL.EC_POINT_invert.argtypes = [ctypes.c_void_p,ctypes.c_void_p,ctypes.c_void_p]
+OpenSSL.EC_POINT_dup = OpenSSL._lib.EC_POINT_dup
+OpenSSL.EC_POINT_dup.restype = ctypes.c_void_p
+OpenSSL.EC_POINT_dup.argtypes = [ctypes.c_void_p,ctypes.c_void_p]
+
 class Point:
     '''
     classdocs
@@ -95,7 +103,21 @@ class Point:
             return Point( self.curve, openssl_point=result )
         else:
             return NotImplemented
-            
+
+    def __neg__(self):
+        """
+        Negate an EC point
+        """
+        result = OpenSSL.EC_POINT_dup( self.os_point, self.os_group )
+        OpenSSL.EC_POINT_invert( self.os_group, result, 0 )
+        return Point( self.curve, openssl_point=result )
+
+    def __sub__(self, other):
+        return self.__add__(other.__neg__())
+
+    def __rsub__(self, other):
+        return __neg__(self.__sub__(other))
+
     def __mul__(self, other):
         """
         Multiply an EC point by a scalar value
